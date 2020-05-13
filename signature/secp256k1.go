@@ -39,3 +39,22 @@ func ConvertToEthCompatible(sig []byte) ([]byte, error) {
 	t[64] = v
 	return t, nil
 }
+
+func ConvertFromEthCompatible(sig []byte) ([]byte, error) {
+	if len(sig) != 65 {
+		return nil, errors.New("invalid signature length")
+	}
+	v := sig[64] + 27
+	copy(sig[1:], sig)
+	sig[0] = v
+
+	s := new(Signature)
+	s.Scheme = SHA3_256withECDSA
+	s.Value = sig
+
+	t, err := Serialize(s)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}

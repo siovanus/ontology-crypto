@@ -1,6 +1,8 @@
 package signature
 
 import (
+	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -70,5 +72,33 @@ func TestEthComp(t *testing.T) {
 	k := pub.(*ec.PublicKey)
 	if k.X.Cmp(pubkey.X) != 0 || k.Y.Cmp(pubkey.Y) != 0 {
 		t.Fatal("recovered public key not match")
+	}
+}
+
+func TestSecp256k1_2(t *testing.T) {
+	pri, _, err := keypair.GenerateKeyPair(keypair.PK_ECDSA, keypair.SECP256K1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	msg := []byte("test message")
+	sig, err := Sign(SHA3_256withECDSA, pri, msg, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := Serialize(sig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := ConvertToEthCompatible(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := ConvertFromEthCompatible(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(a, c) {
+		t.Fatal(fmt.Errorf("bytes not equal"))
 	}
 }
